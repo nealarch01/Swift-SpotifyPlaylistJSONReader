@@ -1,7 +1,9 @@
 // Swift program that reads spotify playlist from a JSON
 // Note: this does not read all objects, just the ones that are necessary to me
+// To compile: swiftc main.swift
 
 import Foundation
+import Darwin
 
 struct Playlist: Decodable {
     let description: String 
@@ -9,7 +11,7 @@ struct Playlist: Decodable {
     let id: String
     let owner: OwnerData
     let images: Array<ImageData>
-    let tracks: Tracks // Does not work
+    let tracks: Tracks 
 }
 
 struct Tracks: Decodable {
@@ -42,10 +44,18 @@ struct ImageData: Decodable {
     let url: String
 }
 
-func initPlaylistData(resource: String) -> Playlist? {
+func initPlaylistData(filename: String) -> Playlist? {
     var playlist: Playlist
     
-    let filePath = Bundle.main.path(forResource: resource, ofType: ".json")
+    let filePath = Bundle.main.path(forResource: filename, ofType: ".json")
+
+    if filePath == nil {
+        let templateString: String = "%@.json file was not found"
+        let message = String(format: templateString, filename)
+        print(message)
+        return nil
+    }
+
     let urlPath = URL(fileURLWithPath: filePath!)
     
     do {
@@ -60,9 +70,14 @@ func initPlaylistData(resource: String) -> Playlist? {
     return playlist
 }
 
-let p = initPlaylistData(resource: "tapioca") 
-if (p == nil) {
-    print("nil")
-} else {
-    print(p!) // Safely unwrap value
+print("Enter json filename")
+let jsonFilename: String? = readLine()
+
+let result: Playlist? = initPlaylistData(filename: jsonFilename!)
+
+if result != nil {
+    print(result!)
+    exit(0)
 }
+
+exit(2)
